@@ -33,7 +33,7 @@ year_qs %>%
       ) %>% 
       ggplot(aes(
         x = from, 
-        y = year - from, 
+        y = from - year, 
         colour = factor(quantile), 
         group = factor(quantile)
       )) + 
@@ -42,7 +42,8 @@ year_qs %>%
       scale_color_viridis_d() +
       theme_minimal() +
       scale_x_continuous(breaks = seq(1800, 2000, 20)) +
-      ylim(-100, 0)
+      ylim(-100, 0) + scale_y_log10()
+# not sure if log is appropriate?
 
 
 years %>% 
