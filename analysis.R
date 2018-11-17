@@ -1,9 +1,15 @@
 
 library(dplyr)
+library(magrittr)
 library(ggplot2)
 library(ggridges)
 
 years <- readr::read_tsv("googlebooks-years", col_names = c("to", "from", "matches", "vols"))
+
+years_rob <- readr::read_tsv("googlebooks-years-robust", col_names = c("to", "from", "matches", "vols"))
+years_rob$to <- readr::parse_number(years_rob$to)
+
+years <- years_rob
 
 years$diff <- years$from - years$to
 years %<>% 
@@ -29,11 +35,12 @@ year_qs <- years %>%
 year_qs %>% 
       filter(
         from >= 1800,
+        to < from,
         quantile %in% c(20, 50, 80)
       ) %>% 
       ggplot(aes(
         x = from, 
-        y = from - year, 
+        y = year - from, 
         colour = factor(quantile), 
         group = factor(quantile)
       )) + 
@@ -41,8 +48,7 @@ year_qs %>%
       geom_smooth(method = "loess", span = 0.1, se = FALSE) + 
       scale_color_viridis_d() +
       theme_minimal() +
-      scale_x_continuous(breaks = seq(1800, 2000, 20)) +
-      ylim(-100, 0) + scale_y_log10()
+      scale_x_continuous(breaks = seq(1800, 2000, 20)) 
 # not sure if log is appropriate?
 
 
