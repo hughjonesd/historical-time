@@ -20,7 +20,21 @@ years %<>%
         decade       = 10 * floor(from/10)
       )
 
+# nice:
+ggplot(years, aes(x = from, y = to)) + 
+      geom_raster(aes(fill=log(matches))) +
+      scale_fill_viridis_c(option = "C") +
+      theme_minimal()
+
+years %>% 
+      filter(to %in% 1912:1917, from >= 1900) %>% 
+      ggplot(aes(x = from, y = prop_matches, group = to, 
+        colour = factor(to))) + 
+      geom_line() + 
+      scale_y_log10()
+
 year_qs <- years %>% 
+      filter(to <= from) %>% 
       arrange(from, to) %>% 
       group_by(from) %>% 
       do({
@@ -35,7 +49,6 @@ year_qs <- years %>%
 year_qs %>% 
       filter(
         from >= 1800,
-        to < from,
         quantile %in% c(20, 50, 80)
       ) %>% 
       ggplot(aes(
@@ -54,6 +67,7 @@ year_qs %>%
 
 years %>% 
       group_by(decade, to) %>% 
+      # filter(to <= from) %>% 
       summarize(
         prop_vols    = mean(prop_vols),
         prop_matches = mean(prop_matches)
@@ -64,6 +78,7 @@ years %>%
           stat = "identity", 
           fill = "black", 
           color = "white",
-          rel_min_height = 0.02
+          rel_min_height = 0.01
         ) + 
-        theme_ridges()
+        theme_ridges() + xlim(1800, 2000)
+# 
