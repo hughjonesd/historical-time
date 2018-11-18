@@ -59,7 +59,7 @@ year_qs <- years %>%
 ggplot(years, aes(x = from, y = to)) + 
       geom_raster(aes(fill=log(matches))) +
       scale_fill_viridis_c(option = "C") +
-      theme_minimal()
+      theme_minimal() + ylim(1800, 2000)
 
 years %>% 
       filter(to %in% 1913:1915, from >= 1900) %>% 
@@ -71,7 +71,7 @@ years %>%
 year_qs %>% 
       filter(
         from >= 1800,
-        quantile %in% c(20, 50, 80)
+        quantile %in% c(10, 20, 50, 80, 90)
       ) %>% 
       ggplot(aes(
         x = from, 
