@@ -39,6 +39,20 @@ years %<>%
         decade       = 10 * floor(from/10)
       )
 
+
+year_qs <- years %>% 
+      filter(to <= from) %>% 
+      arrange(from, to) %>% 
+      group_by(from) %>% 
+      do({
+        to <- .$to
+        pm <- .$matches
+        qs <- Hmisc::wtd.quantile(to, weights = pm, probs = 0:10/10)
+        names(qs) <- 0:10*10
+        as.data.frame(rbind(qs))
+      }) %>% 
+      tidyr::gather("quantile", "year", -from, convert = TRUE)
+
 # == plots =================
 
 # nice:
@@ -53,19 +67,6 @@ years %>%
         colour = factor(to))) + 
       geom_line() + 
       scale_y_log10()
-
-year_qs <- years %>% 
-      filter(to <= from) %>% 
-      arrange(from, to) %>% 
-      group_by(from) %>% 
-      do({
-        to <- .$to
-        pm <- .$matches
-        qs <- Hmisc::wtd.quantile(to, weights = pm, probs = 0:10/10)
-        names(qs) <- 0:10*10
-        as.data.frame(rbind(qs))
-      }) %>% 
-      tidyr::gather("quantile", "year", -from, convert = TRUE)
 
 year_qs %>% 
       filter(
@@ -107,5 +108,5 @@ years %>%
 # == analyses =====================
 
 options(scipen = 10)
-summary(lm(I(year-from) ~ from, year_qs, quantile == 50))
-summary(lm(I(year-from) ~ from, year_qs, quantile == 20))
+summary(lm(I(year - from) ~ from, year_qs, quantile == 50))
+summary(lm(I(year - from) ~ from, year_qs, quantile == 20))
