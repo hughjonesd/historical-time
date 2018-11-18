@@ -1,14 +1,33 @@
 
+# == setup ============
+
+library(tibble)
+library(tidyr)
 library(dplyr)
 library(magrittr)
 library(ggplot2)
 library(ggridges)
 
+# == data cleaning =============
+
+# all matching "XXXX"
 years <- readr::read_tsv("googlebooks-years", col_names = c("to", "from", "matches", "vols"))
 
+# all matching "year XXXX"
 years_rob <- readr::read_tsv("googlebooks-years-robust", col_names = c("to", "from", "matches", "vols"))
 years_rob$to <- readr::parse_number(years_rob$to)
 
+# from hansard-clean.R
+years_han <- readRDS("hansard_year_counts.rds")
+years_han %<>% 
+      as_tibble(rownames = "from") %>% 
+      mutate(from = as.numeric(from)) %>% 
+      tidyr::gather("to", "matches", -from, convert = TRUE)
+years_han %<>% 
+      group_by(from) %>% 
+      filter(sum(matches) > 0)
+
+years <- years_han
 years <- years_rob
 
 years$diff <- years$from - years$to
@@ -16,9 +35,11 @@ years %<>%
       group_by(from) %>% 
       mutate(
         prop_matches = matches/sum(matches),
-        prop_vols    = vols/sum(vols),
+#        prop_vols    = vols/sum(vols),
         decade       = 10 * floor(from/10)
       )
+
+# == plots =================
 
 # nice:
 ggplot(years, aes(x = from, y = to)) + 
@@ -27,7 +48,7 @@ ggplot(years, aes(x = from, y = to)) +
       theme_minimal()
 
 years %>% 
-      filter(to %in% 1912:1917, from >= 1900) %>% 
+      filter(to %in% 1913:1915, from >= 1900) %>% 
       ggplot(aes(x = from, y = prop_matches, group = to, 
         colour = factor(to))) + 
       geom_line() + 
@@ -69,7 +90,7 @@ years %>%
       group_by(decade, to) %>% 
       # filter(to <= from) %>% 
       summarize(
-        prop_vols    = mean(prop_vols),
+        # prop_vols    = mean(prop_vols),
         prop_matches = mean(prop_matches)
       ) %>% 
       filter(decade >= 1900, to >= 1800) %>% 
@@ -81,4 +102,10 @@ years %>%
           rel_min_height = 0.01
         ) + 
         theme_ridges() + xlim(1800, 2000)
-# 
+
+
+# == analyses =====================
+
+options(scipen = 10)
+summary(lm(I(year-from) ~ from, year_qs, quantile == 50))
+summary(lm(I(year-from) ~ from, year_qs, quantile == 20))
