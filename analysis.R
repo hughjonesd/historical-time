@@ -86,6 +86,19 @@ raster_plot <- function (mysource, y = to, dep_var) {
           scale_fill_viridis_c(option = "C") 
 }
 
+# example usage with superimposed quantiles
+# raster_plot("ngrams", prop_past, y = diff) +
+#       scale_y_reverse(limits = c(150, 0)) +
+#       xlim(1870, 1930) +
+#       geom_smooth(
+#         mapping = aes(from, diff, group = quantile, linetype = quantile != 50),
+#         data    = year_qs %>% filter(source == "ngrams", quantile %in% c(20, 50, 80)),
+#         size    = 0.5,
+#         span    = 0.2,
+#         se      = FALSE,
+#         colour  = "yellow"
+#       )
+
 ref_year_plot <- function(mysource, ref_years, y = prop_past) {
   y <- enquo(y)
   years %>% 
